@@ -1,0 +1,53 @@
+services:
+  jobs-service:
+    build: ./services/jobs-service
+    container_name: jobs-service
+    volumes:
+      - jobs-data:/app/data
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build: ./services/ai-service
+    container_name: ai-service
+    environment:
+      - JOBS_SERVICE_URL=http://jobs-service:8001
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    expose:
+      - "8002"
+    depends_on:
+      jobs-service:
+        condition: service_healthy
+
+  gateway:
+    build: ./services/gateway
+    container_name: gateway
+    environment:
+      - JOBS_SERVICE_URL=http://jobs-service:8001
+      - AI_SERVICE_URL=http://ai-service:8002
+    ports:
+      - "8000:8000"
+    depends_on:
+      jobs-service:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    environment:
+      - GATEWAY_URL=http://gateway:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+
+volumes:
+  jobs-data:
