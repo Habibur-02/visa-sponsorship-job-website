@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Fraunces, Geist_Mono } from 'next/font/google';
+import { Fraunces, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
 
@@ -9,7 +9,7 @@ const fraunces = Fraunces({
   display: 'swap',
 });
 
-const geist = Geist_Mono({
+const geist = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-geist',
   display: 'swap',
